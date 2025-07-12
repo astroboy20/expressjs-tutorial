@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import session from "express-session";
 import { mockUsers } from "./utils/constant.js";
 import passport from "passport";
+import "./strategies/local-strategies.js";
 
 const app = express();
 app.disable("x-powered-by");
@@ -41,27 +42,39 @@ app.get("/", (request, response) => {
   response.status(200).send({ msg: "Hello There!" });
 });
 
-app.post("/api/auth", (request, response) => {
-  const { name, password } = request.body;
+app.post("/api/auth", passport.authenticate("local"), (request, response) => {
+  // const { name, password } = request.body;
 
-  const findUser = mockUsers.find((user) => user.name === name);
-  if (!findUser || findUser.password !== password)
-    return response.status(401).send({ msg: "Unauthenticated" });
+  // const findUser = mockUsers.find((user) => user.name === name);
+  // if (!findUser || findUser.password !== password)
+  //   return response.status(401).send({ msg: "Unauthenticated" });
 
-  request.session.user = findUser;
+  // request.session.user = findUser;
 
-  return response.status(200).send(findUser);
+  // return response.status(200).send(findUser);
+  response.status(200).json({ msg: "Login successful", user: request.user });
 });
 
 app.get("/api/auth/status", (request, response) => {
-  request.sessionStore.get(request.sessionID, (err, session) => {
-    console.log(session);
-  });
-  return request.session.user
-    ? response.status(200).send(request.session.user)
-    : response.status(401).send({ msg: "Unauthenticated" });
+  console.log("inside /auth/status");
+  console.log(request.user);
+  console.log(request.session);
+  return request.user ? response.send(request.user) : response.sendStatus(401);
+  // request.sessionStore.get(request.sessionID, (err, session) => {
+  //   console.log(session);
+  // });
+  // return request.session.user
+  //   ? response.status(200).send(request.session.user)
+  //   : response.status(401).send({ msg: "Unauthenticated" });
 });
 
+app.post("/api/auth/logout", (request, response) => {
+  if (!request.user) return response.sendStatus(401);
+  request.logOut((err) => {
+    if (err) return response.sendStatus(400);
+    response.send(200);
+  });
+});
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

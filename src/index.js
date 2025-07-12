@@ -3,8 +3,10 @@ import routes from "./routes/index.js";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import { mockUsers } from "./utils/constant.js";
+import passport from "passport";
 
 const app = express();
+app.disable("x-powered-by");
 app.use(express.json()); // Middleware to parse JSON bodies
 app.use(cookieParser("heloworld"));
 app.use(
@@ -17,6 +19,10 @@ app.use(
     },
   })
 );
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use(routes);
 
 // const loginMiddleware = (request, response, next) => {

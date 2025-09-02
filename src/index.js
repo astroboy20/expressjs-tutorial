@@ -5,9 +5,15 @@ import session from "express-session";
 import { mockUsers } from "./utils/constant.js";
 import passport from "passport";
 import "./strategies/local-strategies.js";
-
+import mongoose from "mongoose";
 const app = express();
+
+mongoose
+  .connect("mongodb://localhost:27017/express_tutorial")
+  .then(() => console.log("Connected to Database"))
+  .catch((err) => console.log(err));
 app.disable("x-powered-by");
+
 app.use(express.json()); // Middleware to parse JSON bodies
 app.use(cookieParser("heloworld"));
 app.use(

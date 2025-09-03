@@ -6,6 +6,8 @@ import {
 } from "../utils/validationSchema.js";
 import { mockUsers } from "../utils/constant.js";
 import { resolveIndexByUserId } from "../utils/middleware.js";
+import { MockUser } from "../mongoose/schemas/user.js";
+import { hashPassword } from "../utils/helpers.js";
 
 const router = Router();
 
@@ -36,20 +38,41 @@ router.get(
 router.post(
   "/api/users",
   checkSchema(validationSchema),
-  (request, response) => {
+  async (request, response) => {
     const result = validationResult(request);
-    console.log(result);
-
-    if (!result.isEmpty())
-      return response.status(400).send({ errors: result.array() });
-
+    if (!result.isEmpty()) return response.status(400).send(result.array());
     const data = matchedData(request);
-    console.log(data);
-    const newUser = { id: mockUsers[mockUsers.length - 1].id + 1, ...data };
-    mockUsers.push(newUser);
-    return response.status(201).send(newUser);
+    console.log(data)
+    // const { body } = request;
+    data.password = await hashPassword(data.password);
+    console.log(data)
+    const newUser = new MockUser(data);
+    try {
+      const savedUser = await newUser.save();
+      return response.status(201).send(newUser);
+    } catch (error) {
+      console.log(error);
+      response.sendStatus(400);
+    }
   }
 );
+// router.post(
+//   "/api/users",
+//   checkSchema(validationSchema),
+//   (request, response) => {
+//     const result = validationResult(request);
+//     console.log(result);
+
+//     if (!result.isEmpty())
+//       return response.status(400).send({ errors: result.array() });
+
+//     const data = matchedData(request);
+//     console.log(data);
+//     const newUser = { id: mockUsers[mockUsers.length - 1].id + 1, ...data };
+//     mockUsers.push(newUser);
+//     return response.status(201).send(newUser);
+//   }
+// );
 
 router.get("/api/users/:id", (request, response) => {
   const { id } = request.params;

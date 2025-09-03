@@ -8,10 +8,6 @@ import "./strategies/local-strategies.js";
 import mongoose from "mongoose";
 const app = express();
 
-mongoose
-  .connect("mongodb://localhost:27017/express_tutorial")
-  .then(() => console.log("Connected to Database"))
-  .catch((err) => console.log(err));
 app.disable("x-powered-by");
 
 app.use(express.json()); // Middleware to parse JSON bodies
@@ -39,6 +35,21 @@ app.use(routes);
 
 // app.use(loginMiddleware);
 const PORT = process.env.PORT || 8100;
+
+mongoose
+  .connect(
+    "mongodb+srv://tolulopeakinkunmi7:October19@cluster0.iwtkqnh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+  )
+  .then(() => {
+    console.log("Connected to Database");
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.log(err);
+    process.exit(1);
+  });
 
 app.get("/", (request, response) => {
   console.log(request.session);
@@ -80,7 +91,4 @@ app.post("/api/auth/logout", (request, response) => {
     if (err) return response.sendStatus(400);
     response.send(200);
   });
-});
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
 });

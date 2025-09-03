@@ -17,6 +17,15 @@ export const validationSchema = {
       errorMessage: "DisplayName cannot be empty!",
     },
   },
+  password: {
+    notEmpty: {
+      errorMessage: "Password cannot be empty!",
+    },
+    isLength: {
+      options: { min: 6 },
+      errorMessage: "Password must be at least 6 characters long",
+    },
+  },
 };
 
 export const filterValidationSchema = {

@@ -6,34 +6,15 @@ import { mockUsers } from "./utils/constant.js";
 import passport from "passport";
 import "./strategies/local-strategies.js";
 import mongoose from "mongoose";
+import MongoStore from "connect-mongo";
+
 const app = express();
 
 app.disable("x-powered-by");
 
 app.use(express.json()); // Middleware to parse JSON bodies
 app.use(cookieParser("heloworld"));
-app.use(
-  session({
-    secret: "helloworld",
-    saveUninitialized: false,
-    resave: false,
-    cookie: {
-      maxAge: 60 * 60 * 24 * 1000,
-    },
-  })
-);
 
-app.use(passport.initialize());
-app.use(passport.session());
-
-app.use(routes);
-
-// const loginMiddleware = (request, response, next) => {
-//   console.log(`${request.url}-${request.method}`);
-//   next();
-// };
-
-// app.use(loginMiddleware);
 const PORT = process.env.PORT || 8100;
 
 mongoose
@@ -50,6 +31,33 @@ mongoose
     console.log(err);
     process.exit(1);
   });
+  
+app.use(
+  session({
+    secret: "helloworld",
+    saveUninitialized: false,
+    resave: false,
+    cookie: {
+      maxAge: 60 * 60 * 24 * 1000,
+    },
+    store: MongoStore.create({
+      client: mongoose.connection.getClient(),
+    }),
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use(routes);
+
+// const loginMiddleware = (request, response, next) => {
+//   console.log(`${request.url}-${request.method}`);
+//   next();
+// };
+
+// app.use(loginMiddleware);
+
 
 app.get("/", (request, response) => {
   console.log(request.session);
